@@ -23,7 +23,39 @@ $(document).ready(function() {
            // Pasa la validacion, crear llamado ajax.
            if (dataForm.accion === 'crear') {
              // Creamos un nuevo Contacto.
-             console.log(dataForm);
+             // console.log(dataForm);
+            $("#contacto")[0].reset()
+
+            // Eviamos y recibimos datos atraves de post.
+             $.post('inc/modelos/modelo-contactos.php', dataForm, function(response){
+               console.log(response);
+               const respuesta  = JSON.parse(response);
+
+               // Dos parametros texto y clase.
+               mostrarNotificacion('los campos fueron llenados correctamente', 'correcto');
+
+               // Insertamos los datos por usuario creado
+               var html = `
+               <tr>
+               <td>${respuesta.datos.nombre}</td>
+               <td>${respuesta.datos.empresa}</td>
+               <td>${respuesta.datos.telefono}</td>
+                <td>
+                  <a class="btn-editar btn" href="editar.php?id=${respuesta.datos.id}">
+                    <i class="fas fa-pen-square"></i>
+                  </a>
+                  <button data-id="${respuesta.datos.id}" type="button" class="btn-borrar btn">
+                    <i class=" fas fa-trash-alt"></i>
+                  </button>
+                  </td>
+                  </tr>
+               `;
+
+               // mostramos los datos en el html
+               $('tbody').append(html);
+
+             });
+
 
            }else {
              console.log('nada..');
@@ -33,11 +65,36 @@ $(document).ready(function() {
   })
 })
 
-// Notificación en pantalla.
+// Borrador de filas
+$(document).ready(function(e){
 
+  $(document).on('click','.listado-contactos button', function() {
+    var elemento = $(this)[0];
+    var id = $(elemento).attr('data-id')
+
+    $(this).closest(elemento.parentElement.parentElement).remove()
+
+    const respuesta = confirm("¿Estas seguro (a)?");
+
+    if (respuesta) {
+      $.get(`inc/modelos/modelo-contactos.php?id=${id}&accion=borrar`,function(response) {
+
+      });
+
+    }
+
+    // $.post('delete_product.php',{id},response)
+
+    // $(this).closest(element).remove() /* remove the <br/> */
+    // .end() /* go back to what was found originally */
+    // .remove(); /* and remove */
+
+})
+
+})
+
+// Notificación en pantalla.
 function mostrarNotificacion(mensaje, clase){
-  console.log(mensaje);
-  console.log(clase);
   const notificacion = document.createElement('div');
   notificacion.classList = clase + ' notificacion '+ 'sombra';
 
@@ -47,6 +104,7 @@ function mostrarNotificacion(mensaje, clase){
 
 
 $( notificacion, ".enviar" ).insertBefore( $("form legend") );
+
 
 // Ocultar y mostrastrar la notificacion.
 
@@ -59,11 +117,3 @@ $( notificacion, ".enviar" ).insertBefore( $("form legend") );
       },3000);
     },1000);
 }
-
-// const formularioContactos = document.querySelector('#');
-//
-// eventListeners() ;
-//
-// function eventListeners(){
-//
-// }
