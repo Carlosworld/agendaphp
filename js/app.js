@@ -9,7 +9,9 @@ $(document).ready(function() {
            nombre:$("#nombre").val(),
            empresa:$("#empresa").val(),
            telefono:$("#telefono").val(),
-           accion:$("#accion").val()
+           accion:$("#accion").val(),
+           id:$("#id").val()
+
          };
 
          if (dataForm.nombre===''||dataForm.empresa===''||dataForm.telefono==='') {
@@ -24,15 +26,17 @@ $(document).ready(function() {
            if (dataForm.accion === 'crear') {
              // Creamos un nuevo Contacto.
              // console.log(dataForm);
-            $("#contacto")[0].reset()
+
 
             // Eviamos y recibimos datos atraves de post.
              $.post('inc/modelos/modelo-contactos.php', dataForm, function(response){
                console.log(response);
                const respuesta  = JSON.parse(response);
-
+               console.log('---->',respuesta);
                // Dos parametros texto y clase.
                mostrarNotificacion('los campos fueron llenados correctamente', 'correcto');
+
+              $("#contacto")[0].reset()
 
                // Insertamos los datos por usuario creado
                var html = `
@@ -53,12 +57,23 @@ $(document).ready(function() {
 
                // mostramos los datos en el html
                $('tbody').append(html);
-
+               numeroContactos();
              });
 
-
            }else {
-             console.log('nada..');
+             // editar el contacto.
+             // leer el id.
+             $.post('inc/modelos/modelo-contactos.php', dataForm, function(response){
+               console.log(response);
+
+                 mostrarNotificacion('El contacto fue editado correctamente', 'correcto');
+
+
+             })
+             setTimeout(()=>{
+               window.location.href = 'index.php';
+             },3000);
+             e.preventDefault();
            }
 
          }
@@ -72,25 +87,40 @@ $(document).ready(function(e){
     var elemento = $(this)[0];
     var id = $(elemento).attr('data-id')
 
-    $(this).closest(elemento.parentElement.parentElement).remove()
-
     const respuesta = confirm("¿Estas seguro (a)?");
 
     if (respuesta) {
-      $.get(`inc/modelos/modelo-contactos.php?id=${id}&accion=borrar`,function(response) {
+    $.get(`inc/modelos/modelo-contactos.php?id=${id}&accion=borrar`,function(response) {
 
-      });
+        mostrarNotificacion('El contacto fue eliminado correctamente', 'correcto');
 
-    }
-
-    // $.post('delete_product.php',{id},response)
-
-    // $(this).closest(element).remove() /* remove the <br/> */
-    // .end() /* go back to what was found originally */
-    // .remove(); /* and remove */
+        });
+        $(this).closest(elemento.parentElement.parentElement).remove()
+         numeroContactos();
+      }else {
+         mostrarNotificacion('hubo un error', 'error');
+      }
 
 })
 
+})
+
+// Buscador.
+$(document).ready(function(e) {
+  $('#buscar').on('input',function() {
+      const elemento = $(this).val();
+      const registros = $('tbody tr');
+
+
+        for(registro of registros) {
+          registro.style.display ='none';
+          // console.log(registro.childNodes[1].textContent.replace(/\s/g, ' ').search(elemento) != -1);
+        if(registro.childNodes[1].textContent.replace(/\s/g, ' ').search(elemento) != -1){
+          registro.style.display ='table-row';
+        }
+        numeroContactos();
+      }
+  })
 })
 
 // Notificación en pantalla.
@@ -116,4 +146,21 @@ $( notificacion, ".enviar" ).insertBefore( $("form legend") );
         notificacion.remove();
       },3000);
     },1000);
+}
+numeroContactos();
+
+function numeroContactos() {
+  const totalContactos = document.querySelectorAll('tbody tr');
+        contenedorNumero = document.querySelector('total-contactos span');
+
+  let total = 0;
+
+  totalContactos.forEach(contacto => {
+    if(contacto.style.display === '' || contacto.style.display === 'table-row'){
+        total++;
+    }
+  });
+
+$('.total-contactos span').text(total);
+
 }

@@ -44,6 +44,41 @@ if($_POST['accion'] == 'crear') {
   echo json_encode($respuesta);
 }
 
+elseif($_POST['accion'] == 'editar'){
+
+        include '../funciones/conexion.php';
+        $nombre = $_POST['nombre'];
+        $empresa = $_POST['empresa'];
+        $telefono = $_POST['telefono'];
+        $id = $_POST['id'];
+var_dump($_POST);
+        try {
+            // Realizar la caonsulta a la base de datos.
+            $stmt = $conn->prepare("UPDATE contactos SET nombre = ?, empresa = ?, telefono = ? WHERE id = ?");
+            $stmt->bind_param('sssi', $nombre, $empresa, $telefono, $id);
+            $stmt->execute();
+            if ($stmt->affected_rows == 1) {
+                $respuesta = array(
+                    'respuesta' => 'correcto',
+
+                );
+            }else{
+                $respuesta = array(
+                    'respuesta' => 'error',
+
+                );
+            }
+
+            $stmt->close();
+            $conn->close();
+        } catch (Exception $e) {
+            // En caso de un error, tomar la conexión.
+            $respuesta = array(
+                'pass' => $e->getMessage()
+            );
+        }
+        echo json_encode($respuesta);
+}
 
 elseif($_GET['accion'] == 'borrar'){
 
@@ -76,4 +111,6 @@ elseif($_GET['accion'] == 'borrar'){
         }
         echo json_encode($respuesta);
 }
+
+
 ?>
